@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
 import { ContractForm } from '@/components/organisms/ContractForm';
 import { ContractCard } from '@/components/molecules/ContractCard';
 import { useEffect, useState } from 'react';
@@ -9,13 +8,16 @@ import { fetchContracts } from '@/infrastructure/api/contracts';
 import { Button } from '@/components/atoms/Button';
 import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useAccount } from 'wagmi';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { address, isConnected } = useAccount();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isConnected) return;
+    
     const loadContracts = async () => {
       try {
         const data = await fetchContracts();
@@ -28,7 +30,15 @@ export default function DashboardPage() {
     };
 
     loadContracts();
-  }, []);
+  }, [isConnected]);
+
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-xl font-semibold">Please connect your wallet to view contracts.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -41,25 +51,21 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">
-          {user?.role === 'employer' ? 'My Contracts' : 'Available Contracts'}
-        </h1>
-        {user?.role === 'employer' && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Contract
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Create New Contract</DialogTitle>
-              </DialogHeader>
-              <ContractForm />
-            </DialogContent>
-          </Dialog>
-        )}
+        <h1 className="text-3xl font-bold">My Contracts</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Contract
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Create New Contract</DialogTitle>
+            </DialogHeader>
+            <ContractForm />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -67,9 +73,8 @@ export default function DashboardPage() {
           <ContractCard
             key={contract.id}
             contract={contract}
-            isFreelancer={user?.role === 'freelancer'}
+            isFreelancer={true} // Si necesitas diferenciar roles, esto debería cambiar
             onApply={() => {
-              // Handle contract application
               console.log('Applying for contract:', contract.id);
             }}
           />

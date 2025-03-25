@@ -1,25 +1,17 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { redirect } from 'next/navigation';
 
 export default function PrivateLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user, router]);
-
-  if (!user) {
-    return null;
+  const { isConnected } = useAccount();
+  
+  if (!isConnected) {
+    redirect('/home'); // <--- Redirige sin useEffect
   }
 
   return <div className="min-h-screen bg-background">{children}</div>;
