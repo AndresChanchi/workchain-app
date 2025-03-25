@@ -1,34 +1,33 @@
 import './globals.css';
-import type { Metadata } from 'next';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Providers } from './providers';
+import { MainNavbar } from '@/interfaces/navigation/MainNavbar';
+import { ToastProvider } from "@/components/ui/toast";
+import { ToastViewport } from "@/components/ui/toast";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'WorkChain - Decentralized Freelance Platform',
-  description: 'Connect, collaborate, and create with WorkChain - the next generation of freelancing',
+  description: 'Connect and collaborate in a decentralized freelance marketplace',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="font-sans">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
-          <Toaster />
-        </ThemeProvider>
+    <html lang="en" className="h-full">
+      <body className="h-full bg-gray-50">
+        <Providers>
+          <ToastProvider>
+            <div className="relative h-full flex flex-col">
+              {/* Navbar siempre visible */}
+              <MainNavbar />
+              {/* Contenido principal con scroll */}
+              <main className="flex-1 overflow-auto">
+                <div className="container mx-auto px-4 py-8">
+                  {children}
+                </div>
+              </main>
+            </div>
+            <ToastViewport />
+          </ToastProvider>
+        </Providers>
       </body>
     </html>
   );
